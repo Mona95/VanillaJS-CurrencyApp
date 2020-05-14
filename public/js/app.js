@@ -37,6 +37,39 @@ window.addEventListener("load", () => {
     el.html(html);
   };
 
+  // Perform POST request, calculate and display conversion results
+  const getConversionResults = async () => {
+    // Extract form data
+    const from = $("#from").val();
+    const to = $("#to").val();
+    const amount = $("#amount").val();
+    // Send post data to Express(proxy) server
+    try {
+      const response = await api.post("/convert", { from, to });
+      const { rate } = response.data;
+      const result = rate * amount;
+      $("#result").html(`${to} ${result}`);
+    } catch (error) {
+      showError(error);
+    } finally {
+      $("#result-segment").removeClass("loading");
+    }
+  };
+
+  // Handle Convert Button Click Event
+  const convertRatesHandler = () => {
+    if ($(".ui.form").form("is valid")) {
+      // hide error message
+      $(".ui.error.message").hide();
+      // Post to Express server
+      $("#result-segment").addClass("loading");
+      getConversionResults();
+      // Prevent page from submitting to server
+      return false;
+    }
+    return true;
+  };
+
   //Display latest currency rates
   router.add("/", async () => {
     //Display loader first
@@ -57,9 +90,31 @@ window.addEventListener("load", () => {
     }
   });
 
-  router.add("/exchange", () => {
+  //Display form for converting rates
+  router.add("/exchange", async () => {
     let html = exchangeTemplate();
     el.html(html);
+    try {
+      //load symbols
+      const response = await api.get("/symbols");
+      const { symbols } = response.data;
+      html = exchangeTemplate({ symbols });
+      el.html(html);
+      // Validate Form Inputs
+      $(".ui.form").form({
+        fields: {
+          from: "empty",
+          to: "empty",
+          amount: "decimal",
+        },
+      });
+      // Specify Submit Handler
+      $(".submit").click(convertRatesHandler);
+    } catch (error) {
+      error && showError(error);
+    } finally {
+      $(".loading").removeClass("loading");
+    }
   });
   router.add("/historical", () => {
     let html = historicalTemplate();
