@@ -19,7 +19,7 @@
     "express": "^4.17.1",
     "handlebars": "^4.7.6",
     "jquery": "^3.5.1",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "nodemon": "^2.0.4",
     "semantic-ui-calendar": "0.0.8",
     "semantic-ui-css": "^2.4.1",
